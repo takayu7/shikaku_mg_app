@@ -24,3 +24,27 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+h1 {
+  @apply text-2xl font-bold;
+}
+h2 {
+  @apply text-xl font-bold;
+}
+h3 {
+  @apply text-lg font-bold text-gray-700;
+}
+label {
+  @apply text-base font-medium;
+}
+
+/* カスタムクラス */
+.input-field {
+  @apply w-full rounded-md border border-gray-300 bg-white px-3 py-2 placeholder:text-gray-400 focus:border-cyan-500 focus:outline-none focus:ring-1 focus:ring-cyan-500;
+}
+.select-field {
+  @apply w-full rounded-md border border-gray-300 bg-white px-3 py-2 focus:border-cyan-500 focus:outline-none focus:ring-1 focus:ring-cyan-500;
+}
+.card {
+  @apply bg-white shadow-md rounded-lg p-10;
+}
