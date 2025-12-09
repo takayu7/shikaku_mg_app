@@ -21,11 +21,25 @@ import {
   Employee,
   RecordInfo,
 } from "@/app/type/type";
+import { Users } from "lucide-react";
 
-export default function EmployeeQual(
-  { ranks , categories , qualeList ,positions, departments, employees, qualeRecords}:
-  { ranks: Rank[], categories: Category[], qualeList: Quale[], positions: Position[] ,departments: Department[] ,employees: Employee[] ,qualeRecords: QualeRecord[] }
-) {
+export default function EmployeeQual({
+  ranks,
+  categories,
+  qualeList,
+  positions,
+  departments,
+  employees,
+  qualeRecords,
+}: {
+  ranks: Rank[];
+  categories: Category[];
+  qualeList: Quale[];
+  positions: Position[];
+  departments: Department[];
+  employees: Employee[];
+  qualeRecords: QualeRecord[];
+}) {
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [departmentFilter, setDepartmentFilter] = useState<string>("all");
   const [qualeFilter, setQualeFilter] = useState<string>("all");
@@ -39,17 +53,20 @@ export default function EmployeeQual(
 
   // 部門名の階層表示用リスト作成
   const newDepartmentList: Department[] = useMemo(() => {
-    return (
-      departments.map((dept)=>{
-        const parent_name = departments.find((d)=> d.dept_id === dept.parent_dept_id)?.dept_name || "";
-        return {
-          dept_id: dept.dept_id,
-          dept_name: parent_name ? parent_name+'/' + dept.dept_name : dept.dept_name,
-          dept_code: dept.dept_code,
-          parent_dept_id: dept.parent_dept_id,
-      }})
-    )
-  },[departments])
+    return departments.map((dept) => {
+      const parent_name =
+        departments.find((d) => d.dept_id === dept.parent_dept_id)?.dept_name ||
+        "";
+      return {
+        dept_id: dept.dept_id,
+        dept_name: parent_name
+          ? parent_name + "/" + dept.dept_name
+          : dept.dept_name,
+        dept_code: dept.dept_code,
+        parent_dept_id: dept.parent_dept_id,
+      };
+    });
+  }, [departments]);
 
   // 社員データに資格情報を結合
   const employeeDataList: RecordInfo[] = useMemo(() => {
@@ -64,16 +81,21 @@ export default function EmployeeQual(
           quales: empQuals.map((eq: QualeRecord) => {
             const qual = qualeList.find((q) => q.qual_id === eq.qual_id);
             const rank = ranks.find((r) => r.rank_id === qual?.rank_id);
-            const cat = categories.find((c) => c.category_id === qual?.category_id);
+            const cat = categories.find(
+              (c) => c.category_id === qual?.category_id
+            );
             return {
               employee_qual_id: eq.employee_qual_id,
               qual_id: qual ? String(qual.qual_id) : "",
               qual_name: qual ? qual.qual_name : "",
               category_id: qual ? qual.category_id : 0,
               category_name: cat ? cat.category_name : "",
-              acquisition_date: typeof eq.acquisition_date === 'string' 
-                ? (eq.acquisition_date as string).split("T")[0]
-                : new Date(eq.acquisition_date as Date).toISOString().split("T")[0],
+              acquisition_date:
+                typeof eq.acquisition_date === "string"
+                  ? (eq.acquisition_date as string).split("T")[0]
+                  : new Date(eq.acquisition_date as Date)
+                      .toISOString()
+                      .split("T")[0],
               rank_id: rank ? rank.rank_id : 0,
               rank_name: rank ? rank.rank_name : "",
             };
@@ -88,9 +110,15 @@ export default function EmployeeQual(
         return empRecordInfo;
       }) || []
     );
-  }, [ranks , categories , qualeList, positions, newDepartmentList , employees ,qualeRecords]);
-
-
+  }, [
+    ranks,
+    categories,
+    qualeList,
+    positions,
+    newDepartmentList,
+    employees,
+    qualeRecords,
+  ]);
 
   // 検索フィルタ
   const filteredData = useMemo(() => {
@@ -103,48 +131,60 @@ export default function EmployeeQual(
       );
     }
     //部署
-    if(departmentFilter !== 'all'){
-      filtered = filtered.filter((emp)=> emp.dept_id === Number(departmentFilter))
+    if (departmentFilter !== "all") {
+      filtered = filtered.filter(
+        (emp) => emp.dept_id === Number(departmentFilter)
+      );
     }
 
     //役職
-    if(positionFilter !== 'all'){
-      filtered = filtered.filter((emp)=> positionFilter.includes(Number(emp.position_id)))
+    if (positionFilter !== "all") {
+      filtered = filtered.filter((emp) =>
+        positionFilter.includes(Number(emp.position_id))
+      );
     }
     //資格
-    if(qualeFilter !== 'all'){
-      filtered = filtered.filter((emp)=> emp.quales.some((q)=> q.qual_id === qualeFilter))
-      filtered = filtered.map((emp)=>({
+    if (qualeFilter !== "all") {
+      filtered = filtered.filter((emp) =>
+        emp.quales.some((q) => q.qual_id === qualeFilter)
+      );
+      filtered = filtered.map((emp) => ({
         ...emp,
-        quales: emp.quales.filter((q)=> q.qual_id === qualeFilter)
-      }))
+        quales: emp.quales.filter((q) => q.qual_id === qualeFilter),
+      }));
     }
     //資格区分
-    if(categoryFilter !== 'all'){
-      filtered = filtered.filter((emp)=> emp.quales.some((q)=> q.category_id === categoryFilter))
-      filtered = filtered.map((emp)=>({
+    if (categoryFilter !== "all") {
+      filtered = filtered.filter((emp) =>
+        emp.quales.some((q) => q.category_id === categoryFilter)
+      );
+      filtered = filtered.map((emp) => ({
         ...emp,
-        quales: emp.quales.filter((q)=> q.category_id === categoryFilter)
-      }))
+        quales: emp.quales.filter((q) => q.category_id === categoryFilter),
+      }));
     }
     // ランクでフィルター
-    if (rankFilter !== 'all') {
-      filtered = filtered.filter(emp => emp.quales.some(q => q.rank_id === rankFilter));
-      filtered = filtered.map(emp => ({
+    if (rankFilter !== "all") {
+      filtered = filtered.filter((emp) =>
+        emp.quales.some((q) => q.rank_id === rankFilter)
+      );
+      filtered = filtered.map((emp) => ({
         ...emp,
-        quales: emp.quales.filter(q => q.rank_id === rankFilter)
+        quales: emp.quales.filter((q) => q.rank_id === rankFilter),
       }));
     }
 
     // 取得年フィルタ
     if (obtainedFromFilter || obtainedToFilter) {
-      console.log(obtainedFromFilter)
-      console.log(obtainedToFilter)
+      console.log(obtainedFromFilter);
+      console.log(obtainedToFilter);
       //日付詳細選択
-      filtered = filtered.filter(emp =>
-        emp.quales.some(cert => {
+      filtered = filtered.filter((emp) =>
+        emp.quales.some((cert) => {
           const obtainedDate = new Date(cert.acquisition_date);
-          const fromDate = obtainedFromFilter ? new Date(obtainedFromFilter) : null;
+          const fromDate = obtainedFromFilter
+            ? new Date(obtainedFromFilter)
+            : null;
           const toDate = obtainedToFilter ? new Date(obtainedToFilter) : null;
 
           if (fromDate && toDate) {
@@ -158,11 +198,13 @@ export default function EmployeeQual(
         })
       );
       // 各社員の資格リストも、選択された取得日のみに絞り込む
-      filtered = filtered.map(emp => ({
+      filtered = filtered.map((emp) => ({
         ...emp,
-        quales: emp.quales.filter(cert => {
+        quales: emp.quales.filter((cert) => {
           const obtainedDate = new Date(cert.acquisition_date);
-          const fromDate = obtainedFromFilter ? new Date(obtainedFromFilter) : null;
+          const fromDate = obtainedFromFilter
+            ? new Date(obtainedFromFilter)
+            : null;
           const toDate = obtainedToFilter ? new Date(obtainedToFilter) : null;
 
           if (fromDate && toDate) {
@@ -173,21 +215,36 @@ export default function EmployeeQual(
             return obtainedDate <= toDate;
           }
           return true;
-        })
-      }))
+        }),
+      }));
     }
     return filtered;
-  }, [employeeDataList, searchQuery, departmentFilter, positionFilter, qualeFilter, categoryFilter, rankFilter , obtainedFromFilter, obtainedToFilter]);
-
+  }, [
+    employeeDataList,
+    searchQuery,
+    departmentFilter,
+    positionFilter,
+    qualeFilter,
+    categoryFilter,
+    rankFilter,
+    obtainedFromFilter,
+    obtainedToFilter,
+  ]);
 
   const getRewardRankColor = (rank: string) => {
     switch (rank) {
-      case 'S': return 'bg-purple-100 text-purple-700 border-purple-300';
-      case 'A': return 'bg-blue-100 text-blue-700 border-blue-300';
-      case 'B': return 'bg-green-100 text-green-700 border-green-300';
-      case 'C': return 'bg-gray-100 text-gray-700 border-gray-300';
-      case 'D': return 'bg-yellow-100 text-yellow-700 border-yellow-300';
-      default: return 'bg-gray-100 text-gray-700 border-gray-300';
+      case "S":
+        return "bg-purple-100 text-purple-700 border-purple-300";
+      case "A":
+        return "bg-blue-100 text-blue-700 border-blue-300";
+      case "B":
+        return "bg-green-100 text-green-700 border-green-300";
+      case "C":
+        return "bg-gray-100 text-gray-700 border-gray-300";
+      case "D":
+        return "bg-yellow-100 text-yellow-700 border-yellow-300";
+      default:
+        return "bg-gray-100 text-gray-700 border-gray-300";
     }
   };
 
@@ -197,7 +254,7 @@ export default function EmployeeQual(
         <div className="flex flex-col gap-6">
           <h2>社員別資格一覧</h2>
           <Flex direction="column" gap="4">
-            <Card className="card" style={{ padding: '1.5rem' }}>
+            <Card className="card" style={{ padding: "1.5rem" }}>
               <Heading size="4" className="flex items-center justify-between">
                 フィルタ・検索
               </Heading>
@@ -405,10 +462,18 @@ export default function EmployeeQual(
                 </div>
               </Grid>
             </Card>
-            <Card className="card" style={{ padding: '1.5rem' }}>
-              <Heading size="4" className="flex items-center justify-between">
+            <Card className="card" style={{ padding: "1.5rem" }}>
+              {/* <Heading size="4" className="flex items-center justify-between">
                 社員別資格一覧
-              </Heading>
+              </Heading> */}
+              <div className="mt-4 flex items-center justify-between text-sm text-gray-600">
+                <div className="flex items-center gap-2">
+                  <Users className="size-4" />
+                  <span>
+                    表示人数: {filteredData.length}人 / 全{employees.length}人
+                  </span>
+                </div>
+              </div>
               <div className="border rounded-lg overflow-hidden border-gray-200 mt-4">
                 <div className="">
                   <Table.Root>
@@ -464,7 +529,10 @@ export default function EmployeeQual(
                                 )?.category_name || ""}
                               </Table.Cell>
                               <Table.Cell>
-                                <Badge variant="outline" className={getRewardRankColor(q.rank_name)}>
+                                <Badge
+                                  variant="outline"
+                                  className={getRewardRankColor(q.rank_name)}
+                                >
                                   {q.rank_name}
                                 </Badge>
                               </Table.Cell>
@@ -475,6 +543,14 @@ export default function EmployeeQual(
                       )}
                     </Table.Body>
                   </Table.Root>
+                </div>
+              </div>
+              <div className="mt-4 flex items-center justify-between text-sm text-gray-600">
+                <div className="flex items-center gap-2">
+                  <Users className="size-4" />
+                  <span>
+                    表示人数: {filteredData.length}人 / 全{employees.length}人
+                  </span>
                 </div>
               </div>
             </Card>
