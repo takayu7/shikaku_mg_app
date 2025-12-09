@@ -1,12 +1,16 @@
 import EmployeeQual from "./(pages)/employee-qual/EmployeeQual";
 
+// 動的レンダリングを強制
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export default async function Home() {
-  // 環境に応じたURLを取得
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
   
   try {
     const res = await fetch(`${baseUrl}/api/employee-qual`, {
-      cache: 'no-store'
+      cache: 'no-store',
+      next: { revalidate: 0 }
     });
     
     if (!res.ok) {
