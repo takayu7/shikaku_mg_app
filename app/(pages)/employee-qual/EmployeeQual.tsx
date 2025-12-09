@@ -10,15 +10,7 @@ import {
   Checkbox,
   Table,
 } from "@radix-ui/themes";
-import {
-  departments,
-  positions,
-  qualeList,
-  categories,
-  ranks,
-  qualeRecords,
-  employees,
-} from "@/app/sample/sample";
+
 import {
   Department,
   Position,
@@ -30,7 +22,10 @@ import {
   RecordInfo,
 } from "@/app/type/type";
 
-export default function EmployeeQual() {
+export default function EmployeeQual(
+  { ranks , categories , qualeList ,positions, departments, employees, qualeRecords}:
+  { ranks: Rank[], categories: Category[], qualeList: Quale[], positions: Position[] ,departments: Department[] ,employees: Employee[] ,qualeRecords: QualeRecord[] }
+) {
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [departmentFilter, setDepartmentFilter] = useState<string>("all");
   const [qualeFilter, setQualeFilter] = useState<string>("all");
@@ -40,6 +35,22 @@ export default function EmployeeQual() {
   const [positionFilter, setPositonFilter] = useState<number[] | "all">("all");
   const [categoryFilter, setCategoryFilter] = useState<number | "all">("all");
 
+  console.log("qualeRecords:", qualeRecords);
+
+  // 部門名の階層表示用リスト作成
+  const newDepartmentList: Department[] = useMemo(() => {
+    return (
+      departments.map((dept)=>{
+        const parent_name = departments.find((d)=> d.dept_id === dept.parent_dept_id)?.dept_name || "";
+        return {
+          dept_id: dept.dept_id,
+          dept_name: parent_name ? parent_name+'/' + dept.dept_name : dept.dept_name,
+          dept_code: dept.dept_code,
+          parent_dept_id: dept.parent_dept_id,
+      }})
+    )
+  },[departments])
+
   // 社員データに資格情報を結合
   const employeeDataList: RecordInfo[] = useMemo(() => {
     return (
@@ -47,7 +58,7 @@ export default function EmployeeQual() {
         const empQuals = qualeRecords.filter(
           (qr) => qr.employee_id === emp.employee_id
         );
-        const dept = departments.find((d) => d.dept_id === emp.dept_id);
+        const dept = newDepartmentList.find((d) => d.dept_id === emp.dept_id);
         const pos = positions.find((p) => p.position_id === emp.position_id);
         const empRecordInfo: RecordInfo = {
           quales: empQuals.map((eq: QualeRecord) => {
@@ -60,7 +71,9 @@ export default function EmployeeQual() {
               qual_name: qual ? qual.qual_name : "",
               category_id: qual ? qual.category_id : 0,
               category_name: cat ? cat.category_name : "",
-              acquisition_date: eq.acquisition_date.toISOString().split("T")[0],
+              acquisition_date: typeof eq.acquisition_date === 'string' 
+                ? (eq.acquisition_date as string).split("T")[0]
+                : new Date(eq.acquisition_date as Date).toISOString().split("T")[0],
               rank_id: rank ? rank.rank_id : 0,
               rank_name: rank ? rank.rank_name : "",
             };
@@ -75,7 +88,9 @@ export default function EmployeeQual() {
         return empRecordInfo;
       }) || []
     );
-  }, []);
+  }, [ranks , categories , qualeList, positions, newDepartmentList , employees ,qualeRecords]);
+
+
 
   // 検索フィルタ
   const filteredData = useMemo(() => {
@@ -220,7 +235,7 @@ export default function EmployeeQual() {
                       />
                       <Select.Content>
                         <Select.Item value="all">すべての部署</Select.Item>
-                        {departments.map((dept: Department) => (
+                        {newDepartmentList.map((dept: Department) => (
                           <Select.Item
                             key={dept.dept_id}
                             value={String(dept.dept_id)}

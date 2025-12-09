@@ -34,8 +34,8 @@ export interface Department {
   dept_name: string;
   dept_code: number;
   parent_dept_id: number;
-  version: number;
-  rec_mod_time: string | null;
+  version?: number;
+  rec_mod_time?: string | null;
 }
 
 // 職位情報
