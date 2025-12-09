@@ -1,20 +1,41 @@
-"use client";
-import { Flex, Text, Button } from "@radix-ui/themes";
+import Employees from "./Employees";
 
-export default function Page() {
-  return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans">
-      <main className="flex min-h-screen w-full flex-col bg-white">
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-          社員一覧
-          </h1>
-          <Flex direction="column" gap="2">
-            <Text>Helloss from Radix Themes :)</Text>
-            <Button>go</Button>
-          </Flex>
-        </div>
-      </main>
-    </div>
-  );
+// 動的レンダリングを強制
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
+export default async function Home() {
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+  
+  try {
+    const res = await fetch(`${baseUrl}/api/employee-qual`, {
+      cache: 'no-store',
+      next: { revalidate: 0 }
+    });
+    
+    if (!res.ok) {
+      throw new Error(`Failed to fetch: ${res.status}`);
+    }
+    
+    const data = await res.json();
+
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans">
+        <main className="flex min-h-screen w-full flex-col bg-white">
+          <Employees
+            ranks={data.ranks || []}
+            categories={data.categories || []}
+            qualeList={data.qualeList || []}
+            positions={data.positions || []}
+            departments={data.departments || []}
+            employees={data.employees || []}
+            qualeRecords={data.qualeRecords || []}
+          />
+        </main>
+      </div>
+    );
+  } catch (error) {
+    console.error('Error:', error);
+    return <div>データの読み込みに失敗しました</div>;
+  }
 }
