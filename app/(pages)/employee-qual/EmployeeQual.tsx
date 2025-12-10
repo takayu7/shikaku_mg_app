@@ -23,6 +23,8 @@ import {
 } from "@/app/type/type";
 import { Users } from "lucide-react";
 
+import { getRewardRankColor } from "@/app/lib/utils";
+
 export default function EmployeeQual({
   ranks,
   categories,
@@ -42,12 +44,12 @@ export default function EmployeeQual({
 }) {
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [departmentFilter, setDepartmentFilter] = useState<string>("all");
+  const [positionFilter, setPositonFilter] = useState<number[] | "all">("all");
   const [qualeFilter, setQualeFilter] = useState<string>("all");
+  const [categoryFilter, setCategoryFilter] = useState<number | "all">("all");
+  const [rankFilter, setRankFilter] = useState<number | "all">("all");
   const [obtainedFromFilter, setObtainedFromFilter] = useState<string>("");
   const [obtainedToFilter, setObtainedToFilter] = useState<string>("");
-  const [rankFilter, setRankFilter] = useState<number | "all">("all");
-  const [positionFilter, setPositonFilter] = useState<number[] | "all">("all");
-  const [categoryFilter, setCategoryFilter] = useState<number | "all">("all");
 
   console.log("qualeRecords:", qualeRecords);
 
@@ -230,23 +232,6 @@ export default function EmployeeQual({
     obtainedFromFilter,
     obtainedToFilter,
   ]);
-
-  const getRewardRankColor = (rank: string) => {
-    switch (rank) {
-      case "S":
-        return "bg-purple-100 text-purple-700 border-purple-300";
-      case "A":
-        return "bg-blue-100 text-blue-700 border-blue-300";
-      case "B":
-        return "bg-green-100 text-green-700 border-green-300";
-      case "C":
-        return "bg-gray-100 text-gray-700 border-gray-300";
-      case "D":
-        return "bg-yellow-100 text-yellow-700 border-yellow-300";
-      default:
-        return "bg-gray-100 text-gray-700 border-gray-300";
-    }
-  };
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-zinc-500 font-sans">

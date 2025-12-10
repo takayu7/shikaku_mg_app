@@ -9,6 +9,14 @@ export interface Employee {
   rec_mod_time: string | null;
 }
 
+// 新規社員情報登録
+export interface AddEmployeeInfo {
+  employee_name: string;
+  employee_furigana: string;
+  dept_id: number;
+  position_id: number;
+}
+
 //資格情報
 export interface Quale   {
     qual_id: number;

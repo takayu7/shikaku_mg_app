@@ -4,11 +4,11 @@ import Employees from "./Employees";
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
-export default async function Home() {
+export default async function Page() {
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
   
   try {
-    const res = await fetch(`${baseUrl}/api/employee-qual`, {
+    const res = await fetch(`${baseUrl}/api/employee`, {
       cache: 'no-store',
       next: { revalidate: 0 }
     });
@@ -28,7 +28,6 @@ export default async function Home() {
             qualeList={data.qualeList || []}
             positions={data.positions || []}
             departments={data.departments || []}
-            employees={data.employees || []}
             qualeRecords={data.qualeRecords || []}
           />
         </main>

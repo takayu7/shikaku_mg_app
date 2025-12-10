@@ -1,5 +1,5 @@
 "use client";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import {
   Flex,
   Card,
@@ -19,8 +19,20 @@ import {
   QualeRecord,
   Employee,
   RecordInfo,
+  AddEmployeeInfo,
 } from "@/app/type/type";
-import { Users ,PencilLine ,Trash2  } from "lucide-react";
+import { Users ,PencilLine ,Trash2, Plus  } from "lucide-react";
+import { AddEmployeeDialog } from "@/app/components/AddEmployeeDialog";
+
+interface EmployeesProps {
+  ranks: Rank[];
+  categories: Category[];
+  qualeList: Quale[];
+  positions: Position[];
+  departments: Department[];
+//   employees: Employee[];
+  qualeRecords: QualeRecord[];
+}
 
 export default function Employees({
   ranks,
@@ -28,24 +40,65 @@ export default function Employees({
   qualeList,
   positions,
   departments,
-  employees,
+//   employees,
   qualeRecords,
-}: {
-  ranks: Rank[];
-  categories: Category[];
-  qualeList: Quale[];
-  positions: Position[];
-  departments: Department[];
-  employees: Employee[];
-  qualeRecords: QualeRecord[];
-}) {
+}: EmployeesProps) {
+  const [localEmployees, setLocalEmployees] = useState<Employee[]>([]);
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [departmentFilter, setDepartmentFilter] = useState<string>("all");
   const [positionFilter, setPositionFilter] = useState<string>("all");
+  const [addDialogOpen, setAddDialogOpen] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(false);
 
-  console.log("qualeRecords:", qualeRecords);
+  useEffect(()=>{
+    fetchData()
+  },[])
 
-  // 部門名の階層表示用リスト作成
+    // データ取得関数
+  const fetchData = async () => {
+    setLoading(true);
+    try {
+      const response = await fetch('/api/employee', {
+        cache: 'no-store'
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setLocalEmployees(data.employees || []);
+      }
+    } catch (error) {
+      console.error('データ取得エラー:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // 社員登録処理
+  const handleAddEmployee = async (employee: AddEmployeeInfo): Promise<boolean> => {
+    setLoading(true);
+    try {
+      const response = await fetch('/api/employee', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(employee),
+      });
+      
+      if (response.ok) {
+        // 登録成功後、全データを再取得
+        await fetchData();
+        setAddDialogOpen(false);
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.error('登録エラー:', error);
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const newDepartmentList: Department[] = useMemo(() => {
     return departments.map((dept) => {
       const parent_name =
@@ -65,7 +118,7 @@ export default function Employees({
   // 社員データに資格情報を結合
   const employeeDataList: RecordInfo[] = useMemo(() => {
     return (
-      employees.map((emp: Employee) => {
+      localEmployees.map((emp: Employee) => {
         const empQuals = qualeRecords.filter(
           (qr) => qr.employee_id === emp.employee_id
         );
@@ -110,7 +163,7 @@ export default function Employees({
     qualeList,
     positions,
     newDepartmentList,
-    employees,
+    localEmployees,
     qualeRecords,
   ]);
 
@@ -145,6 +198,10 @@ export default function Employees({
     departmentFilter,
     positionFilter,
   ]);
+
+    const onCancel = () => {
+        setAddDialogOpen(false);
+    }
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-zinc-500 font-sans">
@@ -240,8 +297,22 @@ export default function Employees({
                 <div className="flex items-center gap-2">
                   <Users className="size-4" />
                   <span>
-                    表示人数: {filteredData.length}人 / 全{employees.length}人
+                    表示人数: {filteredData.length}人 / 全{localEmployees.length}人
                   </span>
+                </div>
+                {loading ? (
+                  <div>loading...</div>
+                ) : (
+                    <div></div>
+                )
+                }
+                <div>
+                  <Button
+                    onClick={() => setAddDialogOpen(true)}
+                  >
+                    <Plus className="size-4" />
+                    社員追加
+                  </Button>
                 </div>
               </div>
               <div className="border rounded-lg overflow-hidden border-gray-200 mt-4">
@@ -266,8 +337,8 @@ export default function Employees({
                           </Table.Cell>
                         </Table.Row>
                       ) : (
-                        filteredData.map((emp) => (
-                            <Table.Row key={emp.employee_id}>
+                        filteredData.map((emp,index) => (
+                            <Table.Row key={index}>
                                   <Table.Cell>
                                     {emp.employee_name}
                                   </Table.Cell>
@@ -283,7 +354,7 @@ export default function Employees({
                                             <PencilLine className="size-4" />
                                         </Button>
                                         <Button variant="outline" color="red">
-                                            <Trash2 className="size-4" />   
+                                            <Trash2 className="size-4" />
                                         </Button>
                                     </div>
                                   </Table.Cell>
@@ -298,7 +369,7 @@ export default function Employees({
                 <div className="flex items-center gap-2">
                   <Users className="size-4" />
                   <span>
-                    表示人数: {filteredData.length}人 / 全{employees.length}人
+                    表示人数: {filteredData.length}人 / 全{localEmployees.length}人
                   </span>
                 </div>
               </div>
@@ -306,6 +377,14 @@ export default function Employees({
           </Flex>
         </div>
       </main>
+      <AddEmployeeDialog
+        departments={departments}
+        positions={positions}
+        handleAddEmployee={handleAddEmployee}
+        open={addDialogOpen}
+        onCancel={onCancel}
+        loading={loading}
+      />
     </div>
   );
 }
